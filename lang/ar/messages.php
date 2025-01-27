@@ -10,7 +10,7 @@ return
         'user name' => ' اسم المستخدم',
         'email' => 'الايميل',
         'actions' => 'الاحداث',
-        'group name	' => 'اسم المجموعة ',
+        'group name' => 'اسم المجموعة ',
         'admin' => 'المدير',
         'add group' => 'اضافة مجموعة ',
         'add user' => 'اضافة مستخدم ',
@@ -23,8 +23,11 @@ return
         'pending' => 'معلق',
         'remove from the group' => 'إزالة من المجموعة',
         'added at'=>'اضيفت في',
-        'checked in files'=>'الملفات المجوزة'
-
+        'reseved files'=>'الملفات المجوزة',
+        'free files'=>'الملفات الحرة',
+        'import from csv'=>'تصدير من CSV',
+        'export to pdf'=>'تصدير  الى  pdf',
+        'export to csv'=>'تصدير الى  csv',
 
 
 

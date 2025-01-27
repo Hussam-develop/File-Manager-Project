@@ -31,12 +31,7 @@
                             <div class="table-responsive">
 
 
-                                @if (session('diff'))
-                                <h3>التغييرات بين النسخة القديمة والجديدة:</h3>
-                                <pre>
-                                    {!! nl2br(e(session('diff'))) !!}
-                                </pre>
-                                @endif
+
                                 <table id="datatable" class="table  table-hover table-sm table-bordered p-0"
                                     data-page-length="50" style="text-align: center">
                                     <thead>
@@ -53,7 +48,7 @@
                                     </thead>
                                     <tbody>
 
-                                        @foreach($files as $file)
+                                        @foreach($reseved_files as $file)
                                         <tr>
                                             <td>
                                                 {{ $loop->iteration}}
@@ -120,7 +115,7 @@
                                                             <label for="name"> File </label><br>
                                                             <input type="hidden" name="file_id"
                                                                 value="{{ $file->id }}" />
-                                                            <input type="file" name="file" class="form-control" />
+                                                            <input type="file" name="file" class="form-control" required/>
                                                         </div>
 
                                                         <div class="modal-footer">
@@ -138,7 +133,7 @@
 
                                 </table>
 
-                                {{ $files->links() }}
+                                {{ $reseved_files->links() }}
                             </div>
                         </div>
                     </div>

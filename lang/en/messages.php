@@ -10,7 +10,7 @@ return
 'user name'=>'User Name',
 'email'=>'Email',
 'actions'=>'Actions',
-'group name	'=>'Group Name',
+'group name'=>'Group Name',
 'admin'=>'Admin',
 'add group'=>'Add Group',
 'add user'=>'Add User',
@@ -23,7 +23,12 @@ return
 'pending'=>'Pending',
 'remove from the group'=>'Remove From the group',
 'added at'=>'Added at',
-'checked in files'=>'Checked In Files'
+'reseved files'=>'Reseved Files',
+'free files'=>'Free Files',
+'import from csv'=>'Import from CSV',
+'export to pdf'=>'Export to Pdf',
+'export to csv'=>'Export to CSV'
+
 
 
 

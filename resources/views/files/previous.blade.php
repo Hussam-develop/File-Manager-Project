@@ -57,7 +57,7 @@
 
                                                 <td>{{$mainfile->user->name}}</td>
                                                 <td>
-                                                    <a href="{{route('admin.dashboard.files.recoverFile',$file->id)}}"
+                                                    <a href="{{route('admin.dashboard.files.restoreFile',$file->id)}}"
                                                         class="btn btn-primary btn-sm" style="color: rgb(255, 255, 255)"
                                                         role="button" aria-pressed="true">Restore</a>
                                                         <a href="{{route('admin.dashboard.files.downloadOldVersion',$file->id)}}"

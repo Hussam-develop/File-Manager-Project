@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Action;
+use App\Models\BackUpFile;
 use App\Models\File;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,9 +14,15 @@ class FileRepository implements FileRepositoryInterface
         return File::create($data);
     }
 
+     public function createBackupFile(array $data)
+    {
+        return BackUpFile::create($data);
+    }
+
     public function getById($id)
     {
-        return File::findOrFail($id);
+        return File::where('id',$id)->lockForUpdate()->first();
+       // return File::where('id',$id)->sharedLock()->first();
     }
 
     public function filePath($id)
@@ -43,7 +50,13 @@ class FileRepository implements FileRepositoryInterface
 
     public function updateStatus($fileId, array $data)
     {
-        $file =$this->getById($fileId);
+        $file = $this->getById($fileId);
+        if (!$file) {
+            throw new \Exception('File not found.');
+        }
+        if ($file->checkStatus === 'reserved' && $data['checkStatus'] === 'reserved') {
+            throw new \Exception('The file is already reserved.');
+        }
         return $file->update($data);
     }
 
@@ -58,10 +71,10 @@ class FileRepository implements FileRepositoryInterface
         return File::where('status', $status)->paginate(8);
     }
 
-    public function getFilesByCheckStatus($userId, $checkStatus)
+    public function getFilesByCheckStatus($checkStatus)
     {
         return File::where('checkStatus', $checkStatus)
-            ->where('user_id', $userId)
+            ->where('user_id',Auth::user()->id)
             ->where('status', 1)
             ->paginate(8);
     }

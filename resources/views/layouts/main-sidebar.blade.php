@@ -18,9 +18,7 @@
 
 
 
-
-
-
+                    @if(auth()->user()->isAdmin)
 
                     <li>
                         <a href="{{ route('admin.dashboard.users') }}">
@@ -31,6 +29,8 @@
                         </a>
 
                     </li>
+
+                    @endif
 
                     <li>
                         <a href="{{ route('admin.dashboard.groups.index') }}">
@@ -54,15 +54,19 @@
                             <div class="clearfix"></div>
                         </a>
                         <ul id="library" class="collapse" data-parent="#sidebarnav">
-                            <li> <a href="{{route('admin.dashboard.files.checkedIn')}}"> {{ __('messages.checked in files')
-                            }} </a>
+                            <li> <a href="{{route('admin.dashboard.files.checkedIn')}}"> {{ __('messages.reseved files')}} </a>
                             </li>
+
+                            {{-- <li> <a href="{{route('admin.dashboard.files.checkedOut')}}"> {{ __('messages.free
+                                    files')}} </a>
+                            </li> --}}
 
                             @if(auth()->user()->isAdmin)
-                            <li> <a href="{{route('admin.dashboard.files.active')}}"> {{ __('messages.active files') }}
+                            {{-- <li> <a href="{{route('admin.dashboard.files.active')}}"> {{ __('messages.active
+                                    files') }}
                                 </a>
 
-                            </li>
+                            </li> --}}
 
                             <li> <a href="{{route('admin.dashboard.files.pending')}}"> {{ __('messages.pending files')
                                     }} </a>

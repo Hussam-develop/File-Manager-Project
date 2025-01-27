@@ -1,0 +1,328 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\File;
+use App\Models\Group;
+use App\Models\Action;
+use App\Traits\ManagerFilesTrait;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Session;
+
+class FileController extends Controller
+{
+    use ManagerFilesTrait;
+
+
+    public function pendingFiles()
+    {
+
+        $files = File::where('status', 0)->paginate(8);
+        return view('files.pendingFiles', compact(['files']));
+    }
+
+    public function activeFiles()
+    {
+
+        $files = File::whereNotNull('status')->paginate(8);
+        return view('files.activeFiles', compact(['files']));
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+
+                $fileUrl = $this->uploadFile($file, 'filles'); // path and file uploaded
+                $fileName = $file->getClientOriginalName();
+
+                $file = new File();
+                $file->name = $fileName;
+                $file->file = $fileUrl;
+                $file->group_id = $request->group_id;
+                $file->user_id = auth()->user()->id;
+                if (auth()->user()->isAdmin) {
+                    $file->status = 1;
+                }
+
+                $file->save();
+
+                Session::flash('success', 'File uploaded successfully');
+                return redirect()->back();
+            }
+        } catch (Exception $e) {
+            Session::flash('error', $e->getMessage());
+
+            return  redirect()->back();
+        }
+    }
+
+    ////start:download file////
+    public function downloadFile($id)
+    {
+        $file = File::find($id);
+        $path = $file->file;
+        Session::flash('success', 'File downloaded successfully');
+        return response()->download($path);
+    }
+    ///end:download file////
+
+
+
+    ///////////////////////////////////////////
+
+    public function multiCheckIn(Request $request)
+    {
+
+
+        $fileIds = $request->input('fileIds');
+        $files = File::whereIn('id', $fileIds)->get();
+
+        foreach ($files as $file) {
+            try {
+                DB::beginTransaction();
+
+                $file->update([
+                    'checkStatus' => 'reserved'
+                ]);
+
+                Action::create([
+                    'user_id' => auth()->user()->id,
+                    'file_id' => $file->id,
+                    'action' => 'check-in',
+                ]);
+
+                DB::commit();
+            } catch (Exception $e) {
+                DB::rollBack();
+                Session::flash('danger', $e->getMessage());
+            }
+        }
+        Session::flash('success', 'Files reserved successfully');
+        return redirect()->back();
+    }
+
+    public function multiApprove(Request $request)
+    {
+
+        $fileIds = $request->input('fileIds');
+        $files = File::whereIn('id', $fileIds)->get();
+
+        foreach ($files as $file) {
+            try {
+                $file->update([
+                    'status' => 1
+                ]);
+            } catch (Exception $e) {
+
+                Session::flash('danger', $e->getMessage());
+            }
+        }
+        Session::flash('success', 'Files approved successfully');
+        return redirect()->back();
+    }
+    /////// checkedIn files      ///////
+
+    public function fileActions($id)
+    {
+        $file = File::find($id);
+        $fileActions = $file->actions()->paginate(8);
+        return view('files.fileActions', compact(['fileActions', 'file']));
+    }
+
+    //// checked in files /////
+    public function checkedInFiles()
+    {
+        $files = File::where('checkStatus', 'reserved')
+            ->where('user_id', auth()->user()->id)
+            ->where('status', 1)
+            ->paginate(8);
+
+        return view('files.checkedInFiles', compact(['files']));
+    }
+
+    /////// check out file      ///////
+    public function checkOut(Request $request)
+    {
+
+
+
+        $oldFile = File::find($request->file_id);
+
+        try {
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+              
+
+                $fileUrl = $this->uploadFile($file, 'filles'); // path and file uploaded
+
+                $fileName = $file->getClientOriginalName();
+
+                DB::beginTransaction();
+
+                $oldFile->update([
+                    'name' => $fileName,
+                    'checkStatus' => 'free',
+                    'file'=>$fileUrl
+                ]);
+
+                Action::create([
+                    'user_id' => auth()->user()->id,
+                    'file_id' => $oldFile->id,
+                    'action' => 'check-out',
+                ]);
+
+                DB::commit();
+                $group = Group::find($oldFile->group_id);
+
+                $files = $group->files()->paginate(9);
+
+                return redirect()->route('admin.dashboard.files.checkedIn',compact('files','group'));
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            Session::flash('warning', $e->getMessage());
+        }
+    }
+
+
+    public function destroy(File $file)
+    {
+        Storage::disk('uploads')->delete($file->path);
+        $file->delete();
+        Session::flash('success', 'File deleted successfully');
+
+        return redirect()->route('files.index');
+    }
+}
+
+
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use App\Models\Group;
+use App\Models\GroupUser;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreGroupRequest;
+use Illuminate\Support\Facades\Session;
+use RealRashid\SweetAlert\Facades\Alert;
+
+class GroupController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+
+        if (auth()->user()->isAdmin) {
+            $groups = Group::paginate(8);
+        } else {
+
+            $userId = auth()->user()->id;
+            $user = User::find($userId);
+            $groups = $user->groups()->orderBy('group_id', 'asc')->paginate(6);
+        }
+        return view('groups.index', compact([
+            'groups',
+        ]));
+    }
+
+
+    public function show(Request $request)
+    {
+        $group = Group::find($request->group_id);
+        $files = $group->files;
+
+        return view('groups.show-group-files', compact('group', 'files'));
+    }
+
+
+    public function store(Request $request)
+    {
+        $group = new Group();
+
+        $validatedData = $request->validate([
+            'name'           => 'required',
+            'string',
+        ]);
+        // Create the group
+        $group = Group::create([
+            'name' => $validatedData['name'],
+            'admin_id' => auth()->user()->id,
+        ]);
+
+        $group->users()->attach([
+            'user_id' => auth()->user()->id,
+        ]);
+        $group->save();
+
+        // flash()->success('Your group has been created.');
+        return redirect()->route('admin.dashboard.groups.index');
+    }
+
+    public function groupUsers($id)
+    {
+
+        $group = Group::findOrFail($id);
+        $users = User::all();
+        $group_Users = $group->users()->paginate(8);
+        return view('groups.group-users', compact([
+            'group',
+            'group_Users',
+            'users'
+        ]));
+    }
+
+    public function groupFiles($id)
+    {
+        $group = Group::findOrFail($id);
+        $files = $group->files()->paginate(8);
+        return view('files.files', compact([
+            'files',
+            'group'
+        ]));
+    }
+
+
+
+    public function addUserTogroup(Request $request, $groupId)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $group = Group::findOrFail($groupId);
+        if ($group->users()->where('user_id', $request->user_id)->exists()) {
+            Session::flash('warning', 'User already exists in this group.');
+            return redirect()->back();
+        }
+        $group_Users = $group->users()->attach($request->user_id);
+        Session::flash('success', 'User Added Succcessfully To ' . $group->name);
+        return redirect()->back();
+    }
+    public function removeUserFromGroup(Request $request, $groupId)
+    {
+        $group = Group::findOrFail($groupId);
+        $group->users()->detach($request->user_id);
+
+        return redirect()->back();
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $group = Group::find($id);
+        $group->users()->detach();
+        $group->delete();
+        Session::flash('success', 'Group destroyed successfully');
+        return redirect()->back();
+    }
+}

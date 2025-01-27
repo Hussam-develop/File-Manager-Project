@@ -4,7 +4,7 @@ Users
 @endsection
 <!-- start:breadcrumb -->
 @section('breadcrumb')
-<li class="breadcrumb-item active" aria-current="page">{{ __('messages.users') }}</li>
+<li class="breadcrumb-item" aria-current="page"><a href="{{ route('admin.dashboard.users') }}">{{ __('messages.users') }}</a></li>
 @endsection
 <!-- end:breadcrumb -->
 
@@ -26,7 +26,7 @@ Users
                 <div class="col-xl-12 mb-30">
                     <div class="card card-statistics h-100">
                         <div class="card-body">
-                           
+
                             <div class="table-responsive">
                                 <table id="datatable" class="table  table-hover table-sm table-bordered p-0"
                                     data-page-length="50" style="text-align: center">

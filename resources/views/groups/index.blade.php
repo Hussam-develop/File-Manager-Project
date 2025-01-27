@@ -49,7 +49,7 @@
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th> {{ __('messages.group name	') }}</th>
+                                            <th> {{ __('messages.group name') }}</th>
                                             <th> {{ __('messages.admin') }}</th>
 
                                             <th>{{ __('messages.actions') }}</th>
@@ -64,13 +64,16 @@
                                             <td>{{$group->admin->name}}</td>
 
                                             <td>
-                                                <a href="{{route('admin.dashboard.group.users',$group->id)}}"
+                                                @if(Auth::user()->id==$group->admin->id)
+
+                                                  <a href="{{route('admin.dashboard.group.users',$group->id)}}"
                                                     class="btn btn-success btn-sm" style="color: rgb(255, 255, 255)"
                                                     role="button" aria-pressed="true">{{ __('messages.users') }}</a>
 
-                                                    <a href="{{route('admin.dashboard.group.files',$group->id)}}"
-                                                        class="btn btn-secondary btn-sm" style="color: rgb(255, 255, 255)"
-                                                        role="button" aria-pressed="true">{{ __('messages.files') }}</a>
+                                                @endif
+                                                <a href="{{route('admin.dashboard.group.files',$group->id)}}"
+                                                    class="btn btn-secondary btn-sm" style="color: rgb(255, 255, 255)"
+                                                    role="button" aria-pressed="true">{{ __('messages.files') }}</a>
                                                 {{--<a href="{{route('dashboard.download-pdf',$file->id)}}"
                                                     title="تحميل الكتاب" class="btn btn-warning btn-sm" role="button"
                                                     aria-pressed="true"><i class="fa fa-download"></i></a>
@@ -87,40 +90,41 @@
                                             </td>
                                         </tr>
 
-  <!-- delete_modal_Grade -->
-  <div class="modal fade" id="delete{{ $group->id }}" tabindex="-1" role="dialog"
-    aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header"  style="background-color: rgb(253, 216, 92)">
-                <h5 style="font-family: 'Cairo', sans-serif;"
-                    class="modal-title" id="exampleModalLabel">
-                    Are you sure ? delete "{{$group->name }}"
-                </h5>
-                <button type="button" class="close" data-dismiss="modal"
-                    aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form
-                    action="{{ route('admin.dashboard.groups.destroy', $group->id) }}"
-                    method="post">
-                    {{ method_field('Delete') }}
-                    @csrf
-                    <input id="id" type="hidden" name="user_id" class="form-control"
-                        value="{{ $group->id }}">
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
-                            data-dismiss="modal">close</button>
-                        <button type="submit"
-                            class="btn btn-danger">send</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+                                        <!-- delete_modal_Grade -->
+                                        <div class="modal fade" id="delete{{ $group->id }}" tabindex="-1" role="dialog"
+                                            aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header"
+                                                        style="background-color: rgb(253, 216, 92)">
+                                                        <h5 style="font-family: 'Cairo', sans-serif;"
+                                                            class="modal-title" id="exampleModalLabel">
+                                                            Are you sure ? delete "{{$group->name }}"
+                                                        </h5>
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <form
+                                                            action="{{ route('admin.dashboard.groups.destroy', $group->id) }}"
+                                                            method="post">
+                                                            {{ method_field('Delete') }}
+                                                            @csrf
+                                                            <input id="id" type="hidden" name="user_id"
+                                                                class="form-control" value="{{ $group->id }}">
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                    data-dismiss="modal">close</button>
+                                                                <button type="submit"
+                                                                    class="btn btn-danger">send</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         @endforeach
                                 </table>
                                 {{ $groups->links() }}

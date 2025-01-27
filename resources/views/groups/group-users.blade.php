@@ -30,7 +30,8 @@ Group Users
                         <div class="card-body">
                             <div>
                                 <button type="button" class="btn btn-success btn-sm" data-toggle="modal"
-                                    data-target="#add-group" title="add group"><i class="fa fa-success fa-plus">{{ __('messages.add user') }}</i>
+                                    data-target="#add-group" title="add group"><i class="fa fa-success fa-plus">{{
+                                        __('messages.add user') }}</i>
                                 </button>
                                 <br>
                             </div>
@@ -45,8 +46,8 @@ Group Users
                                             <th> {{ __('messages.user name') }}</th>
                                             <th>{{ __('messages.email') }}</th>
                                             <th>{{ __('messages.added at') }} </th>
-                                            <th>{{ __('messages.remove from the group') }}
-                                            </th>
+                                            <th>{{ __('messages.remove from the group') }}</th>
+                                            <th>{{ __('messages.actions') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -56,16 +57,24 @@ Group Users
                                             <td>{{$user->name}}</td>
                                             <td>{{$user->email}}</td>
                                             <td>
-                                                {{Carbon\Carbon::parse($user->pivot->created_at)->format('j/n/Y ,g:ia') }}
+                                                {{Carbon\Carbon::parse($user->pivot->created_at)->format('j/n/Y ,g:ia')
+                                                }}
                                             </td>
                                             <td>
 
-                                               @if($group->admin->id ==auth()->user()->id ||auth()->user()->isAdmin)
-                                               <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
-                                               data-target="#delete{{ $user->id }}" title="removeUser"><i
-                                                   class="fa fa-trash"></i></button>
-                                               @endif
+                                                @if($group->admin->id ==auth()->user()->id ||auth()->user()->isAdmin)
+                                                @if($user->id!=$group->admin->id || auth()->user()->isAdmin && auth()->user()->id!=$user->id)
+                                                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+                                                    data-target="#delete{{ $user->id }}" title="removeUser"><i
+                                                        class="fa fa-trash"></i></button>
+                                                        @endif
+                                                @endif
 
+                                            </td>
+                                            <td>
+                                                <a href="{{route('admin.dashboard.user.showAction',$user->id)}}"
+                                                    class="btn btn-success btn-sm" style="color: rgb(255, 255, 255)"
+                                                    role="button" aria-pressed="true">show action</a>
                                             </td>
                                         </tr>
 
@@ -74,10 +83,12 @@ Group Users
                                             aria-labelledby="exampleModalLabel" aria-hidden="true">
                                             <div class="modal-dialog" role="document">
                                                 <div class="modal-content">
-                                                    <div class="modal-header"  style="background-color: rgb(253, 216, 92)">
+                                                    <div class="modal-header"
+                                                        style="background-color: rgb(253, 216, 92)">
                                                         <h5 style="font-family: 'Cairo', sans-serif;"
                                                             class="modal-title" id="exampleModalLabel">
-                                                            Are you sure ? remove "{{$user->name }}" from {{$group->name}}
+                                                            Are you sure ? remove "{{$user->name }}" from
+                                                            {{$group->name}}
                                                         </h5>
                                                         <button type="button" class="close" data-dismiss="modal"
                                                             aria-label="Close">
@@ -90,8 +101,8 @@ Group Users
                                                             method="post">
                                                             {{ method_field('Delete') }}
                                                             @csrf
-                                                            <input id="id" type="hidden" name="user_id" class="form-control"
-                                                                value="{{ $user->id }}">
+                                                            <input id="id" type="hidden" name="user_id"
+                                                                class="form-control" value="{{ $user->id }}">
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-secondary"
                                                                     data-dismiss="modal">close</button>
@@ -129,16 +140,16 @@ Group Users
                     </div>
                     <div class="modal-body">
                         <div class="col-md-5">
-                                <div class="form-group">
-                                    <label for="user"> <span class="text-danger"></span>Username :</label>
-                                    <select class="custom-select mr-sm-2" name="user_id" required>
-                                        <option selected disabled class="form-control"> select user...</option>
-                                        @foreach($users as $user)
-                                            <option value="{{$user->id}}" class="form-control">{{ $user->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                            <div class="form-group">
+                                <label for="user"> <span class="text-danger"></span>Username :</label>
+                                <select class="custom-select mr-sm-2" name="user_id" required>
+                                    <option selected disabled class="form-control"> select user...</option>
+                                    @foreach($users as $user)
+                                    <option value="{{$user->id}}" class="form-control">{{ $user->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
+                        </div>
                         @php
                         $guard='user'
                         @endphp

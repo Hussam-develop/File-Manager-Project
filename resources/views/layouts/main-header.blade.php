@@ -30,6 +30,8 @@
         <li class="nav-item fullscreen">
             <a id="btnFullscreen" href="#" class="nav-link"><i class="ti-fullscreen"></i></a>
         </li>
+
+
         <!-- start:language -->
         <li class="nav-item ">
             <a id="my-dropdown" href="#" class="btn btn-secondary btn-sm dropdown-toggle nav-item"
@@ -41,15 +43,59 @@
                     <a rel="alternate" hreflang="{{ $localeCode }}"
                         href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}">
 
-                       {{ $properties['native'] }}
+                        {{ $properties['native'] }}
                     </a>
                 </li>
                 @endforeach
             </ul>
 
         </li>
-        <!-- end:language -->
 
+        <!-- end:language -->
+        <li class="nav-item dropdown ">
+            <a class="nav-link top-nav" data-toggle="dropdown" href="#" role="button" aria-haspopup="true"
+                aria-expanded="false">
+                <i class="ti-bell"></i>
+                <span class="badge badge-danger notification-status"> </span>
+            </a>
+            <!-- notifications -->
+            <div class="dropdown-menu dropdown-menu-right dropdown-big dropdown-notifications">
+                <div class="dropdown-header notifications" style="background-color: blue">
+                    <strong style="color: rgb(224, 224, 255)">unread Notification</strong>
+                    <span data-count="{{ auth()->user()->unreadNotifications()->count()}}"
+                        class="badge badge-pill badge-warning notif-count">{{
+                       auth()->user()->unreadNotifications()->count() }}</span>
+                </div>
+                <div class="new_message">
+                    <div class="dropdown-divider"></div>
+
+                    <p class="dropdown-item newMessageBody">
+                        <small class="float-right text-muted time">
+
+                        </small>
+                    </p>
+                </div>
+                @foreach (auth()->user()->unreadNotifications()->take(10)->get() as $notification)
+                <div class="dropdown-divider"></div>
+
+               {{--  <p class="dropdown-item"> الاستاذ: {{ $notification->data['userName'] }}
+                    <small class="float-right text-muted time">
+                        {{ $notification->data['userAction'] }}
+                    </small>
+                </p> --}}
+                <a href="{{ url()->current() }}/?notification_id={{ $notification->id }}" class="dropdown-item"> الاستاذ: {{ $notification->data['userName'] }}
+                    <small class="float-right text-muted time">
+                        {{ $notification->data['userAction'] }}
+                    </small>
+                </a>
+                @endforeach
+
+                {{-- <a href="#" class="dropdown-item">New registered user <small
+                        class="float-right text-muted time">Just now</small> </a>
+                --}}
+            </div>
+        </li>
+        <!-- end:notifications -->
 
         @php
         $type='user'
@@ -126,7 +172,7 @@
     var notificationsWrapper = $('.dropdown-notifications');
             var notificationsCountElem = notificationsWrapper.find('span[data-count]');
             var notificationsCount = parseInt(notificationsCountElem.data('count'));
-            var notifications = notificationsWrapper.find('h5');
+            var notifications = notificationsWrapper.find('.newMessageBody');
             var newnotifications = notificationsWrapper.find('.new_message');
             newnotifications.hide();
             // if (notificationsCount <= 0) {
@@ -134,20 +180,20 @@
             // }
             // Enable pusher logging - don't include this in production
             Pusher.logToConsole = true;
+            var pusher = new Pusher('{{ env('PUSHER_APP_KEY') }}', {
+                    cluster: '{{ env('PUSHER_APP_CLUSTER') }}'
+                     });
+                     //
+                var groupIds = {!! json_encode(Auth::user()->groups->pluck('id')) !!}; // الحصول على معرفات المجموعات للمستخدم
+                 groupIds.forEach(function(groupId) {
+                var channel = pusher.subscribe('group-notifications.' + groupId);
 
-            var pusher = new Pusher('efc0e64daa7cd030e730', {
-                cluster: 'mt1'
-            });
+               // var channel = pusher.subscribe('groupNotifications');
 
-            var channel = pusher.subscribe('file-upload');
+            channel.bind('App\\Events\\NewActionEvent', function(data) {
+                var newNotificationHtml = ` <p class="dropdown-item"> المستخدم: ` + data.userName + `<small
+                                class="float-right text-muted time">` + data.userAction + `</small></p>`
 
-            channel.bind('App\\Events\\FileUpload', function(data) {
-             //   var existingNotifications = notifications.html();
-                var newNotificationHtml = ` <h5 class="dropdown-item"> الاستاذ: ` + data.teacherName + `<small
-                                class="float-right text-muted time">` + data.title + `</small></h5>`
-                // var avatar = Math.floor(Math.random() * (71 - 20 + 1)) + 20;
-                //  var newNotificationHtml = `<a href="#" class="dropdown-item">`+data.teacherName+ `<small
-        //                      class="float-right text-muted time">`+data.teacherName+ `</small> </a> `;
         newnotifications.show();
         notifications.html(newNotificationHtml);
 
@@ -156,4 +202,5 @@
                 notificationsWrapper.find('.notif-count').text(notificationsCount);
                 notificationsWrapper.show();
             });
+        });
 </script>

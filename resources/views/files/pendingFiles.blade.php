@@ -141,9 +141,14 @@
                                             </div>
                                             @endforeach
 
-                                            @method('POST')
-                                            <button type="submit" class="btn btn-primary col-md-12 ">
-                                               Approve selected Files </button>
+
+
+                                               @method('POST')
+                                               @if($files->where('status',0)->count() > 0)
+
+                                               <button type="submit" class="btn btn-primary col-md-12 ">
+                                                Approve selected Files </button>
+                                               @endif
 
                                 </form>
 

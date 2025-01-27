@@ -10,20 +10,24 @@ use Illuminate\Http\Request;
 
 class UserService
 {
-    public function __construct(protected UserRepository $userRepository)
+    public function __construct(protected UserRepository $userRepository) {}
+
+    public function getPaginateUsers()
     {
-        $this->userRepository = $userRepository;
+        return $this->userRepository->getPaginateUsers();
     }
 
-    public function getAllUsers() {
-        return $this->userRepository->getAll();
-    }
-
-    public function getById($id) {
+    public function getById($id)
+    {
         return $this->userRepository->getById($id);
-
     }
 
-   
-
+    public function getUserActions($id)
+    {
+        return $this->userRepository->getUserActions($id);
+    }
+    public function getAllUsers()
+    {
+        return $this->userRepository->getAllUsers();
+    }
 }

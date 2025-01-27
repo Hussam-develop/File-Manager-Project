@@ -80,21 +80,31 @@
 
                                                 <td style="width: 80px"> @if ($file->status &&
                                                     $file->checkStatus=='free')
-                                                    <p class="text-success  text-center">
-                                                        {{ $file->checkStatus }}
-                                                    </p>
+                                                   {{--  <a href="javascript:void(0)" id="checkin-btn-{{ $file->id }}"
+                                                        class="btn btn-primary btn-sm checkin"
+                                                        data-id="{{ $file->id }}">
+                                                        Check-in
+                                                    </a> --}}
+                                                    <a href="{{ route('admin.dashboard.files.checkIn',$file->id) }}" id="checkin-btn-{{ $file->id }}"
+                                                        class="btn btn-primary btn-sm"
+                                                        data-id="{{ $file->id }}" onclick="disableButton(this)">
+                                                        Check-in
+                                                    </a>
                                                     @elseif ($file->status && $file->checkStatus=='reserved' )
-                                                    <p class=" text-danger text-center ">reserved</p>
+                                                    <a href="" class="btn btn-danger btn-sm disabled ">reserved</a>
                                                     @else
                                                     <p class=" text-primary text-center ">-</p>
 
                                                     @endif
                                                 </td>
+                                                <div id="message-{{ $file->id }}" class="text-success text-center"
+                                                    style="width:300px;height:30px;background-color:rgb(165, 231, 9): none;">
+                                                </div>
 
                                                 <td>
                                                     <a href="{{route('admin.dashboard.files.actions',$file->id)}}"
-                                                        class="btn btn-success btn-sm" style="color: rgb(255, 255, 255)"
-                                                        role="button" aria-pressed="true">check action</a>
+                                                        class="btn btn-info btn-sm" style="color: rgb(255, 255, 255)"
+                                                        role="button" aria-pressed="true">Tracking </a>
 
                                                     <a href="{{route('admin.dashboard.files.previousVersions',$file->id)}}"
                                                         class="btn btn-success btn-sm" style="color: rgb(255, 255, 255)"
@@ -200,7 +210,46 @@
 </div>
 <!-- row closed -->
 @endsection
+
 @section('js')
+<script>
+function disableButton(link) {
+        // تعطيل الرابط
+        $(link).addClass('disabled');
+        $(link).text('reserved'); // تغيير النص لإظهار حالة الضغط
+        $(link).attr('onclick', 'return false;'); // منع الضغط المتكرر
+
+        // يمكنك هنا إضافة أي عملية أخرى مثل إرسال طلب AJAX
+    }
+     $('.checkinold').on('click',function(){
+        var fileId=$(this).data('id');
+         $.ajax({
+
+            url:'{{ route('admin.dashboard.files.checkIn',':fileId') }}'.replace(':fileId', fileId), // Use the fileId dynamically,
+            type: 'Post',
+            data: {
+                _token: '{{ csrf_token() }}', // Include CSRF token for security
+            },
+            success: function(data) {
+                // Update the UI based on the response
+                $('#checkin-btn-'+ fileId).replaceWith("<p class='text-danger text-center'>reserved</p>");
+       // Trigger the file download
+            window.location.href ='{{route('admin.dashboard.files.download',':fileId')}}'.replace(':fileId', fileId); // Adjust the download URL
+              // Show a success message after a short delay
+             // Show a success message after a short delay
+             $('#message-' + fileId).text('File download started successfully!').css('color', 'white').show();
+                setTimeout(function() {
+                    $('#message-' + fileId).fadeOut(); // Optional: fade out the message after a few seconds
+                }, 3000); // Adjust the timeout as needed
+        },
+            error: function(xhr, status, error) {
+                // Handle error response
+                alert('Error: ' + xhr.responseText);
+            }
+        });
+    });
+
+</script>
 
 @toastr_js
 @toastr_render

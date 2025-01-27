@@ -23,26 +23,27 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+/* Route::get('/test', function () {
+     return response()->json(['message'=>'test successfully'], 200);
+});
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard'); */
 
 Route::group(
     [
         'prefix' => LaravelLocalization::setLocale(),
-        'middleware' => ['auth', 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath'],
+        'middleware' => ['auth','aspect', 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath'],
         'as' => 'admin.'
     ],
     function () {
-       /*  Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-       */
 
         // users
         Route::get('/users/{id}', [UserController::class, 'userActions'])->name('dashboard.user.showAction');
         Route::get('/users', [UserController::class, 'index'])->name('dashboard.users');
+
         //groups
         Route::get('/groups', [GroupController::class, 'index'])->name('dashboard.groups.index');
         Route::delete('/groups/{id}/destroy', [GroupController::class, 'destroy'])->name('dashboard.groups.destroy');
@@ -59,16 +60,18 @@ Route::group(
         Route::get('/files/{id}/previousVersions', [BackUpFileController::class, 'previousVersions'])->name('dashboard.files.previousVersions');
         Route::get('/files/{id}/downloadOldVersion', [BackUpFileController::class, 'downloadOldVersion'])->name('dashboard.files.downloadOldVersion');
 
-        Route::post('/files/{id}/recoverFile ', [BackUpFileController::class, 'recoverFile'])->name('dashboard.files.recoverFile');
-
+        Route::get('/files/{id}/restoreFile', [BackUpFileController::class, 'restoreFile'])->name('dashboard.files.restoreFile');
+        Route::get('/files/{id}/checkIn', [FileController::class, 'checkIn'])->name('dashboard.files.checkIn');
         Route::get('/files/pending', [FileController::class, 'pendingFiles'])->name('dashboard.files.pending');
         Route::get('/files/active', [FileController::class, 'activeFiles'])->name('dashboard.files.active');
         Route::post('/files/store', [FileController::class, 'store'])->name('dashboard.files.store');
         Route::post('/files/multiCheckIn', [FileController::class, 'multiCheckIn'])->name('dashboard.files.multiCheckIn');
         Route::post('/files/multiApprove', [FileController::class, 'multiApprove'])->name('dashboard.files.multiApprove');
         Route::get('/files/checkedIn', [FileController::class, 'checkedInFiles'])->name('dashboard.files.checkedIn');
+        Route::get('/files/checkedOut', [FileController::class, 'checkedOutFiles'])->name('dashboard.files.checkedOut');
 
-
+        Route::get('/users/{id}/user-actions/export/{format}', [UserController::class, 'export'])->name('userActions.export');
+        Route::post('/users/{id}/user-actions/import', [UserController::class, 'import'])->name('userActions.import');
     }
 );
 

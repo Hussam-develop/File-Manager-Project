@@ -5,6 +5,7 @@ namespace App\Repositories;
 interface FileRepositoryInterface
 {
     public function create(array $data);
+    public function createBackupFile(array $data);
     public function getById($id);
     public function filePath($id);
     public function fileActions($id);
@@ -17,6 +18,6 @@ interface FileRepositoryInterface
     //
     public function delete($id);
     public function getFilesByStatus($status);
-    public function getFilesByCheckStatus($userId,$checkStatus);
+    public function getFilesByCheckStatus($checkStatus);
    // public function getCheckedInFiles($userId);
 }
